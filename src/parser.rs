@@ -15,7 +15,7 @@ pub enum BinaryOperation {
     Add,
     Subtract,
     Multiple,
-    Devide,
+    Divide,
     Modulus,
 }
 
@@ -31,7 +31,7 @@ impl fmt::Display for BinaryOperation {
             BinaryOperation::Add => write!(f, "+"),
             BinaryOperation::Subtract => write!(f, "-"),
             BinaryOperation::Multiple => write!(f, "*"),
-            BinaryOperation::Devide => write!(f, "/"),
+            BinaryOperation::Divide => write!(f, "/"),
             BinaryOperation::Modulus => write!(f, "%"),
         }
     }
@@ -41,7 +41,7 @@ impl AsToken for BinaryOperation {
     fn token(&self) -> Token {
         match *self {
             BinaryOperation::Add => Token::Plus,
-            BinaryOperation::Devide => Token::Slash,
+            BinaryOperation::Divide => Token::Slash,
             BinaryOperation::Equal => Token::EqualEqual,
             BinaryOperation::Greater => Token::Greater,
             BinaryOperation::GreaterEqual => Token::GreaterEqual,
@@ -192,7 +192,7 @@ fn factor(token_iterator: &mut TokenIter) -> Result<Expression, &'static str> {
     let mut expression = unary(token_iterator)?;
 
     while let Some(operator) =
-        token_iterator.match_from_options(vec![BinaryOperation::Devide, BinaryOperation::Multiple])
+        token_iterator.match_from_options(vec![BinaryOperation::Divide, BinaryOperation::Multiple, BinaryOperation::Modulus])
     {
         let right = unary(token_iterator)?;
         expression = Expression::Binary(operator, Box::new(expression), Box::new(right));

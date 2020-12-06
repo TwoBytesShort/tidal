@@ -1,21 +1,20 @@
 use std::env;
 use std::fs;
 
-mod scanner;
+mod evaluator;
 mod parser;
+mod scanner;
 
-use crate::scanner::scan_tokens;
 use crate::parser::parse;
+use crate::scanner::scan_tokens;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() == 2 {
         run_file(&args[1]);
-    }
-    else
-    {
+    } else {
         println!("Usage: tidal [script]");
-        return
+        return;
     }
 }
 
@@ -26,16 +25,18 @@ fn run_file(path: &String) {
 }
 
 fn run(source: String) {
-    match scan_tokens(source)
-    {
-        Ok(tokens) => {
-            match parse(&tokens) {
-                Ok(exp) => {
-                    println!("{}", exp);
-                },
-                Err(e) => {
-                    println!("{}", e)
+    match scan_tokens(source) {
+        Ok(tokens) => match parse(&tokens) {
+            Ok(exp) => {
+                println!("{}", exp);
+
+                match exp.evaluate() {
+                    Ok(value) => println!("{}", value),
+                    Err(e) => println!("{}", e),
                 }
+            }
+            Err(e) => {
+                println!("{}", e)
             }
         },
         Err(e) => {
