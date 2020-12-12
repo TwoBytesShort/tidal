@@ -159,7 +159,11 @@ impl SourceIter<'_> {
         }
     }
 
-    fn advance_if_current_and_next(&mut self, expected_current: fn(char) -> bool, expected_next: fn(char) -> bool) -> bool {
+    fn advance_if_current_and_next(
+        &mut self,
+        expected_current: fn(char) -> bool,
+        expected_next: fn(char) -> bool,
+    ) -> bool {
         match self.current {
             Some(c) => expected_current(c) && self.advance_if_next(expected_next),
             None => false,
@@ -172,13 +176,15 @@ pub fn scan_tokens(source: String) -> Result<Vec<Token>, &'static str> {
     let mut tokens: Vec<Token> = Vec::new();
 
     loop {
-        match scan_token(&mut source_iterator)
-        {
-            Ok(Token::EOF) => return Ok(tokens),
+        match scan_token(&mut source_iterator) {
+            Ok(Token::EOF) => {
+                tokens.push(Token::EOF);
+                return Ok(tokens);
+            }
             Ok(Token::Whitespace) => (),
             Ok(Token::Comment(comment)) => print!("{}", comment),
             Err(e) => return Err(e),
-            Ok(t) => tokens.push(t)
+            Ok(t) => tokens.push(t),
         }
 
         source_iterator.advance();
@@ -186,10 +192,9 @@ pub fn scan_tokens(source: String) -> Result<Vec<Token>, &'static str> {
 }
 
 fn scan_token(source_iterator: &mut SourceIter) -> Result<Token, &'static str> {
-    
     let c = match source_iterator.current {
         Some(c) => c,
-        None => return Ok(Token::EOF)
+        None => return Ok(Token::EOF),
     };
 
     return match c {
@@ -201,7 +206,7 @@ fn scan_token(source_iterator: &mut SourceIter) -> Result<Token, &'static str> {
         '.' => Ok(Token::Dot),
         '-' => {
             if source_iterator.advance_if_next(|c| c == '-') {
-                scan_comment(source_iterator)                
+                scan_comment(source_iterator)
             } else {
                 Ok(Token::Minus)
             }
@@ -248,19 +253,16 @@ fn scan_token(source_iterator: &mut SourceIter) -> Result<Token, &'static str> {
                 Err("Unexpected token")
             }
         }
-        c => if c.is_ascii_whitespace() {
-            Ok(Token::Whitespace)
-        }
-        else if c.is_ascii_digit() {
-            scan_number(source_iterator)
-        } 
-        else if c.is_ascii_alphabetic() || c == '_' 
-        {
-            scan_identifier(source_iterator)
-        }
-        else 
-        {
-            Err("Unrecognised character")
+        c => {
+            if c.is_ascii_whitespace() {
+                Ok(Token::Whitespace)
+            } else if c.is_ascii_digit() {
+                scan_number(source_iterator)
+            } else if c.is_ascii_alphabetic() || c == '_' {
+                scan_identifier(source_iterator)
+            } else {
+                Err("Unrecognised character")
+            }
         }
     };
 }
@@ -340,7 +342,7 @@ fn scan_string(source_iterator: &mut SourceIter, terminator: char) -> Result<Tok
             source_iterator.advance();
 
             if n == terminator {
-                return Ok(Token::String(string))
+                return Ok(Token::String(string));
             } else {
                 string.push(n);
             }
